@@ -1,3 +1,4 @@
+// ===== App Config =====
 const coachingLat = 21.223512;
 const coachingLon = 81.653747;
 const allowedRadiusMeters = 100;
@@ -5,11 +6,15 @@ const allowedRadiusMeters = 100;
 const ADMIN_USERNAME = "vks@485";
 const ADMIN_PASSWORD = "vikash@485#";
 const ATTENDANCE_STORAGE_KEY = "attendance";
+const DUPLICATE_ATTEMPT_STORAGE_KEY = "attendanceDuplicateAttempts";
+const DUPLICATE_ATTEMPT_REASON = "Duplicate attendance attempt on same day";
+// ===== Runtime State =====
 let isAdminLoggedIn = false;
 let currentAdminFilter = "today";
 let selectedCustomDate = "";
 let adminSearchTerm = "";
 
+// ===== Geo Utility =====
 function getDistance(lat1, lon1, lat2, lon2) {
   const earthRadiusMeters = 6371e3;
 
@@ -29,6 +34,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return earthRadiusMeters * c;
 }
 
+// ===== Data Parsing & Local Storage =====
 function parseAttendanceEntry(entry) {
   if (typeof entry === "string") {
     const separator = " - ";
@@ -66,6 +72,20 @@ function parseAttendanceEntry(entry) {
   return null;
 }
 
+function parseDuplicateAttemptEntry(entry) {
+  if (!entry || typeof entry !== "object") {
+    return null;
+  }
+
+  return {
+    name: String(entry.name || "Unknown Student"),
+    phone: String(entry.phone || "-"),
+    timestamp: String(entry.timestamp || "Unknown time"),
+    isoTimestamp: String(entry.isoTimestamp || ""),
+    reason: String(entry.reason || DUPLICATE_ATTEMPT_REASON)
+  };
+}
+
 function readAttendance() {
   const rawData = JSON.parse(localStorage.getItem(ATTENDANCE_STORAGE_KEY)) || [];
 
@@ -80,6 +100,72 @@ function saveAttendance(records) {
   localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(records));
 }
 
+function readDuplicateAttempts() {
+  const rawData = JSON.parse(localStorage.getItem(DUPLICATE_ATTEMPT_STORAGE_KEY)) || [];
+
+  if (!Array.isArray(rawData)) {
+    return [];
+  }
+
+  return rawData.map(parseDuplicateAttemptEntry).filter(Boolean);
+}
+
+function saveDuplicateAttempts(records) {
+  localStorage.setItem(DUPLICATE_ATTEMPT_STORAGE_KEY, JSON.stringify(records));
+}
+
+function normalizeNameForMatch(rawName) {
+  return String(rawName || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function normalizePhoneForMatch(rawPhone) {
+  return String(rawPhone || "").replace(/\D/g, "");
+}
+
+function getLocalDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return year + "-" + month + "-" + day;
+}
+
+function isDuplicateAttendanceForToday(records, name, phone, now) {
+  const targetName = normalizeNameForMatch(name);
+  const targetPhone = normalizePhoneForMatch(phone);
+  const todayKey = getLocalDateKey(now);
+
+  return records.some(function (record) {
+    const recordDate = getRecordDate(record);
+    if (!recordDate) {
+      return false;
+    }
+
+    const recordName = normalizeNameForMatch(record.name);
+    const recordPhone = normalizePhoneForMatch(record.phone);
+    const recordDateKey = getLocalDateKey(recordDate);
+
+    return recordName === targetName && recordPhone === targetPhone && recordDateKey === todayKey;
+  });
+}
+
+function logDuplicateAttempt(name, phone, now) {
+  const duplicateAttempts = readDuplicateAttempts();
+
+  duplicateAttempts.push({
+    name: name,
+    phone: phone,
+    timestamp: now.toLocaleString(),
+    isoTimestamp: now.toISOString(),
+    reason: DUPLICATE_ATTEMPT_REASON
+  });
+
+  saveDuplicateAttempts(duplicateAttempts);
+}
+
+// ===== Shared UI Messaging =====
 function setMessage(text, type) {
   const messageElement = document.getElementById("message");
 
@@ -133,6 +219,7 @@ function getValidatedPhone(rawPhone) {
   return cleaned;
 }
 
+// ===== Student Attendance Flow =====
 function markAttendance() {
   const nameInput = document.getElementById("name");
   const phoneInput = document.getElementById("phone");
@@ -182,6 +269,18 @@ function markAttendance() {
         const records = readAttendance();
         const now = new Date();
 
+        if (isDuplicateAttendanceForToday(records, name, phone, now)) {
+          logDuplicateAttempt(name, phone, now);
+          setMessage("Attendance already marked today for " + name + ". Duplicate blocked.", "error");
+
+          if (isAdminLoggedIn) {
+            renderAdminTable();
+            setAdminMessage("Duplicate attendance attempt blocked and logged.", "error");
+          }
+
+          return;
+        }
+
         records.push({
           name: name,
           phone: phone,
@@ -228,6 +327,7 @@ function markAttendance() {
   );
 }
 
+// ===== Admin Login & Session =====
 function showAdminView() {
   document.getElementById("loginView").classList.add("hidden");
   document.getElementById("adminView").classList.remove("hidden");
@@ -312,6 +412,7 @@ function handleLogout() {
   setAdminMessage("Admin panel ready.", "info");
 }
 
+// ===== Date / Search / Filter Helpers =====
 function appendCell(row, value) {
   const td = document.createElement("td");
   td.textContent = value;
@@ -477,6 +578,7 @@ function setActiveFilterButton(filterType) {
   }
 }
 
+// ===== Admin Rendering =====
 function renderStudentInsight(allRecords) {
   const insightCard = document.getElementById("studentInsight");
   const titleElement = document.getElementById("studentInsightTitle");
@@ -549,6 +651,45 @@ function renderStudentInsight(allRecords) {
   });
 }
 
+function renderDuplicateAttempts(allAttempts) {
+  const tableBody = document.getElementById("duplicateListBody");
+  const emptyState = document.getElementById("duplicateEmptyState");
+
+  if (!tableBody || !emptyState) {
+    return;
+  }
+
+  let visibleAttempts = filterAttendanceRecords(allAttempts);
+
+  if (adminSearchTerm) {
+    visibleAttempts = allAttempts.filter(function (attempt) {
+      return matchSearch(attempt, adminSearchTerm);
+    });
+  }
+
+  tableBody.innerHTML = "";
+
+  if (visibleAttempts.length === 0) {
+    emptyState.style.display = "block";
+    emptyState.textContent = "No duplicate attempts found for selected filter.";
+    return;
+  }
+
+  emptyState.style.display = "none";
+
+  visibleAttempts.forEach(function (attempt, index) {
+    const row = document.createElement("tr");
+
+    appendCell(row, String(index + 1));
+    appendCell(row, attempt.name);
+    appendCell(row, attempt.phone || "-");
+    appendCell(row, attempt.timestamp);
+    appendCell(row, attempt.reason || DUPLICATE_ATTEMPT_REASON);
+
+    tableBody.appendChild(row);
+  });
+}
+
 function renderAdminTable() {
   const tableBody = document.getElementById("adminListBody");
   const emptyState = document.getElementById("adminEmptyState");
@@ -558,6 +699,7 @@ function renderAdminTable() {
   }
 
   const records = readAttendance().slice().reverse();
+  const duplicateAttempts = readDuplicateAttempts().slice().reverse();
   let filteredRecords = filterAttendanceRecords(records);
 
   if (adminSearchTerm) {
@@ -569,6 +711,7 @@ function renderAdminTable() {
   tableBody.innerHTML = "";
   updateFilterMeta(filteredRecords.length);
   renderStudentInsight(records);
+  renderDuplicateAttempts(duplicateAttempts);
 
   if (filteredRecords.length === 0) {
     emptyState.style.display = "block";
@@ -589,7 +732,6 @@ function renderAdminTable() {
     tableBody.appendChild(row);
   });
 }
-
 function clearAttendanceRecords() {
   if (!isAdminLoggedIn) {
     setAdminMessage("Please login first.", "error");
@@ -597,24 +739,26 @@ function clearAttendanceRecords() {
   }
 
   const records = readAttendance();
+  const duplicateAttempts = readDuplicateAttempts();
 
-  if (records.length === 0) {
+  if (records.length === 0 && duplicateAttempts.length === 0) {
     setAdminMessage("No attendance records to clear.", "info");
     return;
   }
 
-  const confirmed = window.confirm("Clear all attendance records?");
+  const confirmed = window.confirm("Clear all attendance records and duplicate attempts?");
 
   if (!confirmed) {
     return;
   }
 
   localStorage.removeItem(ATTENDANCE_STORAGE_KEY);
+  localStorage.removeItem(DUPLICATE_ATTEMPT_STORAGE_KEY);
   updateSummary(readAttendance());
   renderAdminTable();
-  setAdminMessage("All attendance records cleared.", "info");
+  setAdminMessage("Attendance and duplicate-attempt logs cleared.", "info");
 }
-
+// ===== Route Handling =====
 function isAdminRoute() {
   const forcedRoute = document.body.getAttribute("data-route");
 
@@ -657,6 +801,7 @@ function initializeRouteView() {
   adminRouteApp.classList.add("hidden");
 }
 
+// ===== DOM Events =====
 function bindStudentEvents() {
   const markButton = document.getElementById("markBtn");
   const nameInput = document.getElementById("name");
@@ -769,6 +914,7 @@ function bindAdminEvents() {
   }
 }
 
+// ===== App Bootstrap =====
 document.addEventListener("DOMContentLoaded", function () {
   initializeRouteView();
   updateSummary(readAttendance());
