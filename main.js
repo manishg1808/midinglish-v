@@ -8,6 +8,7 @@ const ATTENDANCE_STORAGE_KEY = "attendance";
 let isAdminLoggedIn = false;
 let currentAdminFilter = "today";
 let selectedCustomDate = "";
+let adminSearchTerm = "";
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const earthRadiusMeters = 6371e3;
@@ -257,11 +258,17 @@ function handleAdminLogin() {
     isAdminLoggedIn = true;
     currentAdminFilter = "today";
     selectedCustomDate = "";
+    adminSearchTerm = "";
     setActiveFilterButton(currentAdminFilter);
 
     const customDateInput = document.getElementById("customDateFilter");
     if (customDateInput) {
       customDateInput.value = "";
+    }
+
+    const searchInput = document.getElementById("adminSearch");
+    if (searchInput) {
+      searchInput.value = "";
     }
 
     showAdminView();
@@ -281,6 +288,7 @@ function handleLogout() {
   isAdminLoggedIn = false;
   currentAdminFilter = "today";
   selectedCustomDate = "";
+  adminSearchTerm = "";
   setActiveFilterButton(currentAdminFilter);
 
   document.getElementById("adminUsername").value = "";
@@ -292,6 +300,11 @@ function handleLogout() {
   const customDateInput = document.getElementById("customDateFilter");
   if (customDateInput) {
     customDateInput.value = "";
+  }
+
+  const searchInput = document.getElementById("adminSearch");
+  if (searchInput) {
+    searchInput.value = "";
   }
 
   showLoginView();
@@ -406,6 +419,32 @@ function filterLabel() {
   return "All";
 }
 
+function matchSearch(record, rawTerm) {
+  const term = rawTerm.toLowerCase().trim();
+  if (!term) {
+    return true;
+  }
+
+  const name = String(record.name || "").toLowerCase();
+  const phone = String(record.phone || "").toLowerCase();
+  const digitsOnlyTerm = term.replace(/\D/g, "");
+  const digitsOnlyPhone = phone.replace(/\D/g, "");
+
+  if (name.includes(term)) {
+    return true;
+  }
+
+  if (phone.includes(term)) {
+    return true;
+  }
+
+  if (digitsOnlyTerm && digitsOnlyPhone.includes(digitsOnlyTerm)) {
+    return true;
+  }
+
+  return false;
+}
+
 function updateFilterMeta(recordsCount) {
   const filterMeta = document.getElementById("filterMeta");
 
@@ -413,7 +452,13 @@ function updateFilterMeta(recordsCount) {
     return;
   }
 
-  filterMeta.textContent = "Showing attendance for: " + filterLabel() + " (" + recordsCount + ")";
+  let label = "Showing attendance for: " + filterLabel() + " (" + recordsCount + ")";
+
+  if (adminSearchTerm) {
+    label += " | Search: " + adminSearchTerm;
+  }
+
+  filterMeta.textContent = label;
 }
 
 function setActiveFilterButton(filterType) {
@@ -432,6 +477,78 @@ function setActiveFilterButton(filterType) {
   }
 }
 
+function renderStudentInsight(allRecords) {
+  const insightCard = document.getElementById("studentInsight");
+  const titleElement = document.getElementById("studentInsightTitle");
+  const totalElement = document.getElementById("studentInsightTotal");
+  const datesList = document.getElementById("studentDatesList");
+
+  if (!insightCard || !titleElement || !totalElement || !datesList) {
+    return;
+  }
+
+  if (!adminSearchTerm) {
+    insightCard.classList.add("hidden");
+    return;
+  }
+
+  const matchingRecords = allRecords.filter(function (record) {
+    return matchSearch(record, adminSearchTerm);
+  });
+
+  insightCard.classList.remove("hidden");
+  datesList.innerHTML = "";
+
+  if (matchingRecords.length === 0) {
+    titleElement.textContent = "Student Summary";
+    totalElement.textContent = "Total Attendance: 0";
+
+    const item = document.createElement("li");
+    item.textContent = "No student match found for search input.";
+    datesList.appendChild(item);
+    return;
+  }
+
+  const grouped = {};
+
+  matchingRecords.forEach(function (record) {
+    const key = record.name + "||" + (record.phone || "-");
+    if (!grouped[key]) {
+      grouped[key] = [];
+    }
+    grouped[key].push(record);
+  });
+
+  const bestKey = Object.keys(grouped).sort(function (a, b) {
+    return grouped[b].length - grouped[a].length;
+  })[0];
+
+  const selectedStudentRecords = grouped[bestKey];
+  const sample = selectedStudentRecords[0];
+
+  titleElement.textContent = sample.name + " (" + (sample.phone || "-") + ")";
+  totalElement.textContent = "Total Attendance: " + selectedStudentRecords.length;
+
+  const dateCounts = {};
+
+  selectedStudentRecords.forEach(function (record) {
+    const recordDate = getRecordDate(record);
+    const dateLabel = recordDate ? recordDate.toLocaleDateString() : "Unknown Date";
+
+    if (!dateCounts[dateLabel]) {
+      dateCounts[dateLabel] = 0;
+    }
+
+    dateCounts[dateLabel] += 1;
+  });
+
+  Object.keys(dateCounts).forEach(function (dateLabel) {
+    const item = document.createElement("li");
+    item.textContent = dateLabel + " - " + dateCounts[dateLabel] + " attendance";
+    datesList.appendChild(item);
+  });
+}
+
 function renderAdminTable() {
   const tableBody = document.getElementById("adminListBody");
   const emptyState = document.getElementById("adminEmptyState");
@@ -441,10 +558,17 @@ function renderAdminTable() {
   }
 
   const records = readAttendance().slice().reverse();
-  const filteredRecords = filterAttendanceRecords(records);
+  let filteredRecords = filterAttendanceRecords(records);
+
+  if (adminSearchTerm) {
+    filteredRecords = records.filter(function (record) {
+      return matchSearch(record, adminSearchTerm);
+    });
+  }
 
   tableBody.innerHTML = "";
   updateFilterMeta(filteredRecords.length);
+  renderStudentInsight(records);
 
   if (filteredRecords.length === 0) {
     emptyState.style.display = "block";
@@ -561,9 +685,12 @@ function bindAdminEvents() {
   const loginButton = document.getElementById("loginBtn");
   const logoutButton = document.getElementById("logoutBtn");
   const clearButton = document.getElementById("clearRecordsBtn");
+  const printButton = document.getElementById("printBtn");
   const usernameInput = document.getElementById("adminUsername");
   const passwordInput = document.getElementById("adminPassword");
   const customDateInput = document.getElementById("customDateFilter");
+  const searchInput = document.getElementById("adminSearch");
+  const clearSearchButton = document.getElementById("clearSearchBtn");
   const filterButtons = document.querySelectorAll(".filter-btn");
 
   if (!loginButton || !logoutButton || !clearButton || !usernameInput || !passwordInput) {
@@ -586,6 +713,33 @@ function bindAdminEvents() {
 
   logoutButton.addEventListener("click", handleLogout);
   clearButton.addEventListener("click", clearAttendanceRecords);
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      adminSearchTerm = searchInput.value.trim();
+
+      if (isAdminLoggedIn) {
+        renderAdminTable();
+      }
+    });
+  }
+
+  if (clearSearchButton && searchInput) {
+    clearSearchButton.addEventListener("click", function () {
+      adminSearchTerm = "";
+      searchInput.value = "";
+
+      if (isAdminLoggedIn) {
+        renderAdminTable();
+      }
+    });
+  }
+
+  if (printButton) {
+    printButton.addEventListener("click", function () {
+      window.print();
+    });
+  }
 
   filterButtons.forEach(function (button) {
     button.addEventListener("click", function () {

@@ -90,7 +90,10 @@
     <div id="adminView" class="admin-view hidden">
       <div class="admin-toolbar">
         <h3>Simple Attendance Log</h3>
-        <button id="logoutBtn" type="button" class="ghost-btn">Logout</button>
+        <div class="admin-toolbar-actions">
+          <button id="printBtn" type="button" class="print-btn" title="Print attendance data" aria-label="Print attendance data">Print</button>
+          <button id="logoutBtn" type="button" class="ghost-btn">Logout</button>
+        </div>
       </div>
 
       <div class="admin-summary">
@@ -112,7 +115,18 @@
         <input type="date" id="customDateFilter" class="filter-date hidden">
       </div>
 
+      <div class="admin-search-bar">
+        <input type="text" id="adminSearch" placeholder="Search by student name or phone number">
+        <button id="clearSearchBtn" type="button" class="ghost-btn">Clear</button>
+      </div>
+
       <p id="filterMeta" class="filter-meta">Showing attendance for: Today</p>
+
+      <section id="studentInsight" class="student-insight hidden">
+        <h4 id="studentInsightTitle">Student Summary</h4>
+        <p id="studentInsightTotal">Total Attendance: 0</p>
+        <ul id="studentDatesList" class="student-dates"></ul>
+      </section>
 
       <div class="table-wrap">
         <table class="attendance-table" aria-label="Admin attendance table">

@@ -373,6 +373,17 @@ button:active {
   gap: 12px;
 }
 
+.admin-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.print-btn {
+  background: linear-gradient(135deg, #0369a1, #0ea5e9);
+  color: #ffffff;
+}
+
 .admin-summary {
   margin-top: 12px;
   display: grid;
@@ -439,6 +450,67 @@ button:active {
   color: #0f766e;
   font-weight: 700;
   font-size: 0.88rem;
+}
+
+.admin-search-bar {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.admin-search-bar input {
+  width: 100%;
+  border: 1px solid #c7d5df;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--text-strong);
+  background: #ffffff;
+  outline: none;
+}
+
+.admin-search-bar input:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
+}
+
+.student-insight {
+  margin-top: 12px;
+  border: 1px solid #cde2eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(180deg, #f8fbfd, #f1f7fa);
+}
+
+.student-insight h4 {
+  margin: 0;
+  color: var(--text-strong);
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+}
+
+.student-insight p {
+  margin: 8px 0 0;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.student-dates {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.student-dates li {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #dbe4ea;
 }
 
 .table-wrap {
@@ -563,5 +635,36 @@ button:active {
   .admin-toolbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .admin-toolbar-actions {
+    width: 100%;
+  }
+
+  .admin-search-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .bg-orb,
+  #studentApp,
+  #loginView,
+  .admin-filter-bar,
+  .admin-search-bar,
+  .admin-actions,
+  #logoutBtn,
+  #printBtn {
+    display: none !important;
+  }
+
+  .card,
+  .table-wrap {
+    box-shadow: none !important;
+    border-color: #d1d5db !important;
   }
 }
