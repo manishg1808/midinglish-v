@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medinglish Attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../s.css">
+<script src="../main.js" defer></script>
+</head>
+<body data-route="vks">
+<div class="bg-orb orb-one" aria-hidden="true"></div>
+<div class="bg-orb orb-two" aria-hidden="true"></div>
+
+<main id="studentApp" class="app-shell">
+  <section class="hero card reveal">
+    <p class="eyebrow">Geo-Verified Presence</p>
+    <h1>Medinglish Coaching</h1>
+    <p class="hero-copy">Professional location-based attendance workflow for accurate classroom records.</p>
+    <div class="hero-metrics">
+      <div class="metric">
+        <span>Allowed Radius</span>
+        <strong>100m</strong>
+      </div>
+      <div class="metric">
+        <span>Total Entries</span>
+        <strong id="totalCount">0</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel card reveal delay-1">
+    <div class="section-head">
+      <h2>Mark Attendance</h2>
+      <p>Enter your name and phone number, then verify your current location.</p>
+    </div>
+
+    <div class="form-grid">
+      <label class="field" for="name">
+        <span>Student Name</span>
+        <input type="text" id="name" placeholder="e.g. Vikash Sharma" autocomplete="name">
+      </label>
+
+      <label class="field" for="phone">
+        <span>Phone Number</span>
+        <input type="tel" id="phone" placeholder="e.g. 9876543210" autocomplete="tel" inputmode="numeric">
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="markBtn" type="button">Mark Attendance</button>
+    </div>
+
+    <p id="message" class="message info" aria-live="polite">Ready to mark attendance.</p>
+  </section>
+</main>
+
+<main id="adminRouteApp" class="admin-shell hidden">
+  <section class="admin-card card reveal">
+    <div class="admin-header">
+      <p class="eyebrow dark">Secure Route /vks</p>
+      <h2>Admin Attendance Panel</h2>
+      <div class="admin-badges">
+        <span class="badge">No Database</span>
+        <span class="badge">Local Storage Mode</span>
+      </div>
+    </div>
+
+    <div id="loginView" class="admin-view">
+      <p class="admin-note">Please login with admin username and password to view attendance log.</p>
+
+      <div class="admin-login-grid">
+        <label class="field" for="adminUsername">
+          <span>Username</span>
+          <input type="text" id="adminUsername" placeholder="Enter username" autocomplete="username">
+        </label>
+
+        <label class="field" for="adminPassword">
+          <span>Password</span>
+          <input type="password" id="adminPassword" placeholder="Enter password" autocomplete="current-password">
+        </label>
+      </div>
+
+      <button id="loginBtn" class="full-btn" type="button">Login & Open Log</button>
+      <p id="loginMessage" class="message info">Enter username and password to open attendance log.</p>
+    </div>
+
+    <div id="adminView" class="admin-view hidden">
+      <div class="admin-toolbar">
+        <h3>Simple Attendance Log</h3>
+        <button id="logoutBtn" type="button" class="ghost-btn">Logout</button>
+      </div>
+
+      <div class="admin-summary">
+        <div class="summary-item">
+          <span>Storage</span>
+          <strong>Browser LocalStorage</strong>
+        </div>
+        <div class="summary-item">
+          <span>Data Mode</span>
+          <strong>Offline / Static</strong>
+        </div>
+      </div>
+
+      <div class="admin-filter-bar">
+        <button class="filter-btn active" data-filter="today" type="button">Today</button>
+        <button class="filter-btn" data-filter="yesterday" type="button">Yesterday</button>
+        <button class="filter-btn" data-filter="month" type="button">1 Month</button>
+        <button class="filter-btn" data-filter="custom" type="button">Calendar Date</button>
+        <input type="date" id="customDateFilter" class="filter-date hidden">
+      </div>
+
+      <p id="filterMeta" class="filter-meta">Showing attendance for: Today</p>
+
+      <div class="table-wrap">
+        <table class="attendance-table" aria-label="Admin attendance table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody id="adminListBody"></tbody>
+        </table>
+        <p id="adminEmptyState" class="empty-state">No attendance entries found.</p>
+      </div>
+
+      <div class="admin-actions">
+        <button id="clearRecordsBtn" type="button" class="danger-btn">Clear Records</button>
+      </div>
+
+      <p id="adminMessage" class="message info">Admin panel ready.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>
+
