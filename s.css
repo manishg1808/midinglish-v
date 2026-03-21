@@ -1,4 +1,3 @@
-/* ===== Theme Variables ===== */
 :root {
   --bg-main: #edf3f6;
   --bg-soft: #f7fafc;
@@ -22,7 +21,6 @@
   --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.07);
 }
 
-/* ===== Base Reset ===== */
 * {
   box-sizing: border-box;
 }
@@ -72,7 +70,6 @@ body {
   bottom: -90px;
 }
 
-/* ===== Layout Shell ===== */
 .app-shell,
 .admin-shell {
   position: relative;
@@ -93,7 +90,6 @@ body {
   max-width: 980px;
 }
 
-/* ===== Shared Card Style ===== */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -105,7 +101,6 @@ body {
   overflow: hidden;
 }
 
-/* ===== Student Hero Section ===== */
 .hero {
   background:
     linear-gradient(150deg, rgba(13, 148, 136, 0.96), rgba(14, 116, 144, 0.94)),
@@ -213,7 +208,6 @@ body {
   background: linear-gradient(90deg, #0f766e, #0ea5e9);
 }
 
-/* ===== Form Fields ===== */
 .form-grid,
 .admin-login-grid {
   display: grid;
@@ -256,7 +250,6 @@ body {
   margin-top: 16px;
 }
 
-/* ===== Buttons ===== */
 button {
   border: none;
   border-radius: 12px;
@@ -308,7 +301,6 @@ button:active {
   background: linear-gradient(135deg, var(--danger-hover), #be123c);
 }
 
-/* ===== Status Messages ===== */
 .message {
   margin: 14px 0 0;
   padding: 11px 12px;
@@ -336,7 +328,6 @@ button:active {
   border-left-color: #ef4444;
 }
 
-/* ===== Admin Panel Layout ===== */
 .admin-card {
   max-width: 920px;
   margin: 0 auto;
@@ -393,7 +384,33 @@ button:active {
   color: #ffffff;
 }
 
-/* ===== Admin Filters ===== */
+.admin-summary {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary-item {
+  background: #f8fafc;
+  border: 1px solid #dbe4ea;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.summary-item span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.summary-item strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-strong);
+  font-size: 0.95rem;
+}
+
 .admin-filter-bar {
   margin-top: 12px;
   display: flex;
@@ -435,7 +452,6 @@ button:active {
   font-size: 0.88rem;
 }
 
-/* ===== Admin Search ===== */
 .admin-search-bar {
   margin-top: 12px;
   display: grid;
@@ -460,7 +476,6 @@ button:active {
   box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
 }
 
-/* ===== Student Insight Card ===== */
 .student-insight {
   margin-top: 12px;
   border: 1px solid #cde2eb;
@@ -498,46 +513,7 @@ button:active {
   border: 1px solid #dbe4ea;
 }
 
-/* ===== Duplicate Attempt Section ===== */
-.duplicate-section {
-  margin-top: 14px;
-  border: 1px solid #f3d3dd;
-  border-radius: 14px;
-  padding: 12px;
-  background: linear-gradient(180deg, #fffafb, #fff4f6);
-}
-
-.duplicate-header h4 {
-  margin: 0;
-  color: #831843;
-  font-family: "Space Grotesk", "Segoe UI", sans-serif;
-}
-
-.duplicate-header p {
-  margin: 7px 0 0;
-  color: #9f1239;
-  font-size: 0.88rem;
-}
-
-.duplicate-wrap {
-  margin-top: 10px;
-}
-
-.duplicate-wrap .attendance-table {
-  min-width: 690px;
-}
-
-.duplicate-wrap .attendance-table th {
-  background: #ffe4ea;
-  color: #9f1239;
-}
-
-.duplicate-wrap .attendance-table tbody tr:hover td {
-  background: #fff1f4;
-}
-
-/* ===== Attendance Tables ===== */
-  .table-wrap {
+.table-wrap {
   margin-top: 14px;
   overflow-x: auto;
   border-radius: 14px;
@@ -605,7 +581,6 @@ button:active {
   width: 100%;
 }
 
-/* ===== Animations ===== */
 .reveal {
   opacity: 0;
   transform: translateY(10px);
@@ -627,11 +602,16 @@ button:active {
   }
 }
 
-/* ===== Responsive ===== */
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
     padding-top: 24px;
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-summary {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -666,7 +646,6 @@ button:active {
   }
 }
 
-/* ===== Print ===== */
 @media print {
   body {
     background: #ffffff;

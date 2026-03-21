@@ -14,9 +14,7 @@
 <div class="bg-orb orb-one" aria-hidden="true"></div>
 <div class="bg-orb orb-two" aria-hidden="true"></div>
 
-  <!-- Section Start: Student App -->
 <main id="studentApp" class="app-shell">
-  <!-- Section Start: Student Hero -->
   <section class="hero card reveal">
     <p class="eyebrow">Geo-Verified Presence</p>
     <h1>Medinglish Coaching</h1>
@@ -33,7 +31,6 @@
     </div>
   </section>
 
-  <!-- Section Start: Attendance Form Panel -->
   <section class="panel card reveal delay-1">
     <div class="section-head">
       <h2>Mark Attendance</h2>
@@ -43,12 +40,12 @@
     <div class="form-grid">
       <label class="field" for="name">
         <span>Student Name</span>
-        <input type="text" id="name" placeholder="e.g. Vikash Sharma" autocomplete="name">
+        <input type="text" id="name" placeholder="e.g. Vikash Chauhan" autocomplete="name">
       </label>
 
       <label class="field" for="phone">
         <span>Phone Number</span>
-        <input type="tel" id="phone" placeholder="e.g. 9876543210" autocomplete="tel" inputmode="numeric">
+        <input type="tel" id="phone" placeholder="e.g. 9310963484" autocomplete="tel" inputmode="numeric">
       </label>
     </div>
 
@@ -60,11 +57,8 @@
   </section>
 </main>
 
-  <!-- Section Start: Admin Route App -->
 <main id="adminRouteApp" class="admin-shell hidden">
-  <!-- Section Start: Admin Card -->
   <section class="admin-card card reveal">
-    <!-- Section Start: Admin Header -->
     <div class="admin-header">
       <p class="eyebrow dark">Secure Route /vks</p>
       <h2>Admin Attendance Panel</h2>
@@ -74,11 +68,9 @@
       </div>
     </div>
 
-    <!-- Section Start: Admin Login View -->
     <div id="loginView" class="admin-view">
       <p class="admin-note">Please login with admin username and password to view attendance log.</p>
 
-      <!-- Section Start: Admin Login Form -->
       <div class="admin-login-grid">
         <label class="field" for="adminUsername">
           <span>Username</span>
@@ -96,8 +88,6 @@
     </div>
 
     <div id="adminView" class="admin-view hidden">
-      <!-- Section Guide: Each block below marks where that section starts -->
-      <!-- Section Start: Admin Toolbar -->
       <div class="admin-toolbar">
         <h3>Simple Attendance Log</h3>
         <div class="admin-toolbar-actions">
@@ -105,7 +95,18 @@
           <button id="logoutBtn" type="button" class="ghost-btn">Logout</button>
         </div>
       </div>
-      <!-- Section Start: Admin Filter -->
+
+      <div class="admin-summary">
+        <div class="summary-item">
+          <span>Storage</span>
+          <strong>Browser LocalStorage</strong>
+        </div>
+        <div class="summary-item">
+          <span>Data Mode</span>
+          <strong>Offline / Static</strong>
+        </div>
+      </div>
+
       <div class="admin-filter-bar">
         <button class="filter-btn active" data-filter="today" type="button">Today</button>
         <button class="filter-btn" data-filter="yesterday" type="button">Yesterday</button>
@@ -114,7 +115,6 @@
         <input type="date" id="customDateFilter" class="filter-date hidden">
       </div>
 
-      <!-- Section Start: Admin Search -->
       <div class="admin-search-bar">
         <input type="text" id="adminSearch" placeholder="Search by student name or phone number">
         <button id="clearSearchBtn" type="button" class="ghost-btn">Clear</button>
@@ -122,14 +122,12 @@
 
       <p id="filterMeta" class="filter-meta">Showing attendance for: Today</p>
 
-      <!-- Section Start: Student Insight -->
       <section id="studentInsight" class="student-insight hidden">
         <h4 id="studentInsightTitle">Student Summary</h4>
         <p id="studentInsightTotal">Total Attendance: 0</p>
         <ul id="studentDatesList" class="student-dates"></ul>
       </section>
 
-      <!-- Section Start: Attendance Log Table -->
       <div class="table-wrap">
         <table class="attendance-table" aria-label="Admin attendance table">
           <thead>
@@ -145,31 +143,6 @@
         <p id="adminEmptyState" class="empty-state">No attendance entries found.</p>
       </div>
 
-      <!-- Section Start: Duplicate Attempt Log -->
-      <section class="duplicate-section">
-        <div class="duplicate-header">
-          <h4>Blocked Duplicate Attempts</h4>
-          <p>If same name + phone tries attendance again on same day, it is blocked and logged here.</p>
-        </div>
-
-        <div class="table-wrap duplicate-wrap">
-          <table class="attendance-table" aria-label="Duplicate attempt table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Attempt Time</th>
-                <th>Reason</th>
-              </tr>
-            </thead>
-            <tbody id="duplicateListBody"></tbody>
-          </table>
-          <p id="duplicateEmptyState" class="empty-state">No duplicate attempts found.</p>
-        </div>
-      </section>
-
-      <!-- Section Start: Admin Actions -->
       <div class="admin-actions">
         <button id="clearRecordsBtn" type="button" class="danger-btn">Clear Records</button>
       </div>
